@@ -1,0 +1,374 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Burger Bucks — Litepaper</title>
+
+  <style>
+    :root{
+      /* Burgundy base + brand */
+      --bg:#2e0c12; --bg2:#42121a; --card:#1a1316;
+      --text:#f2f3f5; --muted:#b7bbc3;
+      --brand:#e11d2e; --brand-600:#c11224;
+
+      /* CTA contrast (gold/amber) */
+      --amber:#ffbf3b; --amber-600:#e5aa22; --ink:#0c0d0f;
+
+      --ring:#ff676720; --radius:18px; --shadow:0 20px 40px rgba(0,0,0,.45);
+      --grad-title: linear-gradient(92deg,#fff 0%,#ffd7d7 30%,#ff9f9f 60%,#ffd37e 100%);
+    }
+    @media (prefers-color-scheme: light){
+      :root{ --bg:#faf6f7; --bg2:#f3e9eb; --card:#ffffff; --text:#1a1b1f; --muted:#525b67; --shadow:0 18px 32px rgba(0,0,0,.08) }
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0; color:var(--text); font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
+    body{
+      background:
+        /* keep the soft bubbles */
+        radial-gradient(1200px 800px at 10% -10%, #ff6363 0, transparent 35%),
+        radial-gradient(900px 600px at 110% 10%, #ffb70333 0, transparent 45%),
+        /* burgundy base */
+        linear-gradient(160deg, var(--bg), var(--bg2));
+    }
+    .container{max-width:1040px; margin:0 auto; padding:28px 20px 120px}
+
+    /* ===== Header ===== */
+    header.site-header{
+      position: sticky; top: 0; z-index: 100;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 12px 14px; margin-bottom: 22px;
+      border: 1px solid #ffffff22; border-radius: 18px;
+      background:
+        radial-gradient(100% 180% at 0% 0%, rgba(255,255,255,.10), rgba(255,255,255,.03) 60%),
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      backdrop-filter: blur(7px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo-chip{
+      width:48px; height:48px; border-radius:14px; display:grid; place-items:center;
+      background: radial-gradient(120% 120% at 20% 10%, #ffffff22, #0000), var(--card);
+      border:1px solid #ffffff24; box-shadow:0 10px 18px rgba(0,0,0,.45); overflow:hidden;
+    }
+    .title{
+      margin:0; line-height:1.05; font-size:26px; font-weight:1000; letter-spacing:.2px;
+      background: var(--grad-title); -webkit-background-clip:text; background-clip:text; color:transparent;
+      text-shadow: 0 1px 2px rgba(0,0,0,.25);
+    }
+    .subtitle{ display:block; font-size:13.5px; color:var(--muted); margin-top:3px; font-weight:500 }
+    .subtitle:after{
+      content:""; display:block; height:2px; width:120px; margin-top:6px;
+      background: linear-gradient(90deg, var(--amber), transparent); border-radius:999px; opacity:.85;
+    }
+
+    /* Buttons */
+    .btn{background:var(--amber); color:var(--ink); padding:12px 18px; border-radius:12px; font-weight:900; border:none; cursor:pointer; box-shadow:0 12px 26px rgba(255,191,59,.35)}
+    .btn:hover{background:var(--amber-600)}
+    .btn.secondary{background:transparent; color:var(--amber); border:1.6px solid var(--amber); box-shadow:none}
+
+    /* Menu button (burger) */
+    .icon-btn{
+      appearance:none; border:0; background:var(--card); cursor:pointer;
+      display:inline-flex; align-items:center; justify-content:center;
+      width:46px; height:46px; margin-right:8px; border-radius:14px;
+      transition: transform .22s ease, background .22s ease, box-shadow .22s ease, opacity .25s ease;
+      box-shadow:0 6px 12px rgba(0,0,0,.35);
+    }
+    .icon-btn:hover{ background:var(--amber); transform:translateY(-2px); box-shadow:0 10px 18px rgba(0,0,0,.45) }
+    .icon-btn.fade-out{ opacity:0; pointer-events:none }
+    .icon-btn.fade-in{ opacity:1 }
+    .burger-svg{ display:block; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); transition: transform .25s ease }
+    .icon-btn:hover .burger-svg{ transform: translateY(-1px) }
+
+    /* Sidenav */
+    .sidenav{position:fixed; z-index:120; inset:0 auto 0 0; width:280px; max-width:86vw; background:var(--card); border-right:1px solid #ffffff22; box-shadow:var(--shadow); transform:translateX(-100%); transition:transform .25s ease; display:flex; flex-direction:column}
+    .sidenav.open{transform:translateX(0)}
+    .sidenav-header{display:flex; align-items:center; justify-content:space-between; padding:14px; border-bottom:1px solid #ffffff18; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02))}
+    .sidenav-brand{ display:flex; align-items:center; gap:10px; color:var(--text) }
+    .logo-chip.small{width:36px; height:36px; border-radius:10px}
+    .sidenav ul{list-style:none; margin:0; padding:10px}
+    .sidenav li{margin:6px 0}
+    .sidenav a{display:block; padding:10px 12px; border-radius:10px; text-decoration:none; color:var(--text); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid #ffffff12}
+    .sidenav a:hover{border-color:#ffffff28; transform:translateX(2px)}
+    .scrim{position:fixed; inset:0; z-index:110; background:rgba(0,0,0,.55); backdrop-filter:blur(1.5px)}
+    body.nav-open{ overflow:hidden }
+
+    /* Cards & layout */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid #ffffff18; border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; margin-top:18px}
+    .h2{margin:0 0 8px}
+    .muted{color:var(--muted)}
+    .grid{display:grid; grid-template-columns:1fr; gap:18px; margin-top:18px}
+    @media (min-width:980px){ .grid-2{grid-template-columns:1.2fr .8fr} }
+    ul.clean{margin:8px 0 0 18px}
+
+    /* Key-value blocks */
+    .kv{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .kv div{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid #ffffff12; border-radius:12px; padding:12px}
+    .kv strong{display:block; font-size:13px; color:var(--muted)}
+    .kv span{font-weight:800; font-size:18px}
+
+    /* Roadmap timeline */
+    .timeline{position:relative; margin-top:6px; padding-left:26px}
+    .timeline:before{content:""; position:absolute; left:10px; top:4px; bottom:4px; width:2px; background:linear-gradient(#ffb4b4, var(--brand)); border-radius:2px}
+    .milestone{position:relative; margin:12px 0; padding:10px 12px; border-radius:12px; border:1px solid #ffffff18; background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02))}
+    .milestone:before{content:""; position:absolute; left:-20px; top:14px; width:12px; height:12px; border-radius:50%; background:var(--brand); box-shadow:0 0 0 3px #ffb4b433}
+    .milestone small{display:block; color:var(--muted)}
+
+    /* Print */
+    @media print{
+      body{background:#fff; color:#000}
+      header.site-header, .scrim, .icon-btn { display:none !important }
+      .card{border:1px solid #ddd; box-shadow:none}
+      a{color:#000}
+    }
+  </style>
+</head>
+<body id="top">
+  <div class="container">
+    <!-- ===== Header ===== -->
+    <header class="site-header">
+      <button id="menuBtn" class="icon-btn" aria-label="Open menu" aria-controls="sideNav" aria-expanded="false">
+        <!-- Delicious burger SVG -->
+        <svg class="burger-svg" width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
+          <defs>
+            <linearGradient id="bunTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffd28a"/><stop offset="100%" stop-color="#e5a64e"/></linearGradient>
+            <linearGradient id="bunBottom" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0b25a"/><stop offset="100%" stop-color="#d38d3a"/></linearGradient>
+            <linearGradient id="patty" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5a2e1b"/><stop offset="100%" stop-color="#3d1e12"/></linearGradient>
+            <linearGradient id="cheese" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffd93b"/><stop offset="100%" stop-color="#ffb703"/></linearGradient>
+            <linearGradient id="lettuce" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8bd66a"/><stop offset="100%" stop-color="#3aa74b"/></linearGradient>
+          </defs>
+          <path d="M8 28c0-10 10-18 24-18s24 8 24 18H8z" fill="url(#bunTop)"/>
+          <g fill="#fff" fill-opacity=".85"><circle cx="26" cy="18" r="1.1"/><circle cx="34" cy="16" r="1.1"/><circle cx="42" cy="20" r="1.1"/><circle cx="20" cy="21" r="1.1"/></g>
+          <path d="M12 30c4 3 8 2 12 0s8-2 12 0 8 3 12 0c4-3 8-2 8-2v4H4v-4s4-1 8 2z" fill="url(#lettuce)"/>
+          <path d="M14 34h36l-6 6-6-4-6 4-6-4-6 4z" fill="url(#cheese)"/>
+          <rect x="10" y="34" width="44" height="6" rx="3" fill="url(#patty)"/>
+          <rect x="12" y="42" width="40" height="8" rx="4" fill="url(#bunBottom)"/>
+        </svg>
+      </button>
+
+      <div class="brand">
+        <div class="logo-chip">
+          <svg class="burger-svg" width="24" height="24" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M8 28c0-10 10-18 24-18s24 8 24 18H8z" fill="#ffd28a"/>
+            <rect x="10" y="34" width="44" height="6" rx="3" fill="#5a2e1b"/>
+            <path d="M14 34h36l-6 6-6-4-6 4-6-4-6 4z" fill="#ffd93b"/>
+            <path d="M12 30c4 3 8 2 12 0s8-2 12 0 8 3 12 0c4-3 8-2 8-2v4H4v-4s4-1 8 2z" fill="#69c65a"/>
+            <rect x="12" y="42" width="40" height="8" rx="4" fill="#f0b25a"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="title">Burger Bucks — Litepaper</h1>
+          <span class="subtitle">FAST Network’s token for real-world restaurant rewards</span>
+        </div>
+      </div>
+
+      <div class="cta">
+        <a class="btn secondary" href="index.html">← Back to Presale</a>
+      </div>
+    </header>
+
+    <!-- ===== Sidenav ===== -->
+    <nav id="sideNav" class="sidenav" aria-hidden="true">
+      <div class="sidenav-header">
+        <div class="sidenav-brand">
+          <div class="logo-chip small">
+            <svg class="burger-svg" width="22" height="22" viewBox="0 0 64 64" aria-hidden="true">
+              <path d="M8 28c0-10 10-18 24-18s24 8 24 18H8z" fill="#ffd28a"/>
+              <rect x="10" y="34" width="44" height="6" rx="3" fill="#5a2e1b"/>
+              <path d="M14 34h36l-6 6-6-4-6 4-6-4-6 4z" fill="#ffd93b"/>
+              <path d="M12 30c4 3 8 2 12 0s8-2 12 0 8 3 12 0c4-3 8-2 8-2v4H4v-4s4-1 8 2z" fill="#69c65a"/>
+              <rect x="12" y="42" width="40" height="8" rx="4" fill="#f0b25a"/>
+            </svg>
+          </div>
+          <strong>Navigate</strong>
+        </div>
+        <button id="closeNav" class="icon-btn" style="width:40px;height:40px;border-radius:10px" aria-label="Close menu">✕</button>
+      </div>
+      <ul>
+        <li><a href="#overview" data-close-nav>Overview</a></li>
+        <li><a href="#utility" data-close-nav>Utility</a></li>
+        <li><a href="#tokenomics" data-close-nav>Tokenomics</a></li>
+        <li><a href="#presale" data-close-nav>Presale</a></li>
+        <li><a href="#roadmap" data-close-nav>Roadmap</a></li>
+        <li><a href="#team" data-close-nav>Team</a></li>
+        <li><a href="#legal" data-close-nav>Legal</a></li>
+        <li><a href="index.html" data-close-nav>Open Presale App →</a></li>
+      </ul>
+    </nav>
+    <div id="navScrim" class="scrim" hidden></div>
+
+    <!-- ===== CONTENT ===== -->
+
+    <section class="card" id="overview">
+      <h2 class="h2">Overview</h2>
+      <p class="lede muted">
+        Burger Bucks (BURGER) powers FAST Network’s on-chain restaurant ecosystem—delivering ownable rewards,
+        token-gated loyalty, and real-world payments that are simple for customers and sustainable for merchants.
+      </p>
+      <div class="note" style="border-left:6px solid var(--brand); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border-radius:10px; padding:12px 14px; margin:12px 0">
+        <strong>Mission:</strong> onboard restaurants to web3 with practical, measurable utility.
+      </div>
+    </section>
+
+    <div class="grid grid-2">
+      <section class="card" id="utility">
+        <h2 class="h2">Utility</h2>
+        <p class="muted">
+          Burger Bucks isn’t just another token—it's the financial backbone of a purpose-built ecosystem designed to
+          transform how restaurants engage customers, reward loyalty, and capture value in the digital economy.
+        </p>
+        <ul class="clean">
+          <li>
+            <strong>Customer Rewards:</strong> BURGER operates as a universal, on-chain rewards currency for purchases,
+            promotions, and referrals. Unlike legacy punch-cards, tokens carry real transferability—driving repeat
+            business and measurable loyalty.
+          </li>
+          <li>
+            <strong>Loyalty Tiers:</strong> Token-gated memberships unlock VIP experiences (priority reservations, curated
+            events, exclusive menus), elevating brand positioning and increasing customer lifetime value.
+          </li>
+          <li>
+            <strong>Merchant Tools:</strong> Operators access dashboards, real-time analytics, and APIs that integrate with
+            existing POS. Quantify campaign ROI, optimize promotions, and open new monetization streams—without heavy lift.
+          </li>
+          <li>
+            <strong>Payments:</strong> Crypto-native checkout with optional fiat on/off-ramps. Instant, transparent,
+            borderless settlement reduces fees and taps into a growing web3 consumer base.
+          </li>
+          <li>
+            <strong>Staking & Incentives:</strong> Staking aligns long-term participation and liquidity health—creating a
+            virtuous cycle of growth, sustainability, and community engagement.
+          </li>
+        </ul>
+        <div class="note">
+          Together, these utilities position BURGER as a fully integrated financial instrument for scaling customer
+          engagement, merchant profitability, and ecosystem value capture.
+        </div>
+      </section>
+
+      <section class="card" id="tokenomics">
+        <h2 class="h2">Tokenomics</h2>
+        <div class="kv" style="margin-top:8px">
+          <div><strong>Total Supply</strong><span>100,000,000 BURGER</span></div>
+          <div><strong>Ticker</strong><span>BURGER</span></div>
+          <div><strong>Decimals</strong><span>18</span></div>
+          <div><strong>Chain</strong><span>Ethereum (initial)</span></div>
+        </div>
+        <table style="margin-top:12px; width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; border:1px solid #ffffff1a">
+          <thead><tr><th style="padding:12px 14px; background:rgba(255,255,255,.06); text-align:left">Allocation</th><th style="padding:12px 14px; background:rgba(255,255,255,.06); text-align:left">Percent</th><th style="padding:12px 14px; background:rgba(255,255,255,.06); text-align:left">Notes</th></tr></thead>
+          <tbody>
+            <tr><td style="padding:12px 14px">Presale</td><td style="padding:12px 14px">20%</td><td style="padding:12px 14px">Liquidity & early distribution</td></tr>
+            <tr style="background:rgba(255,255,255,.03)"><td style="padding:12px 14px">Liquidity Pool</td><td style="padding:12px 14px">30%</td><td style="padding:12px 14px">DEX liquidity & market health</td></tr>
+            <tr><td style="padding:12px 14px">Team & Advisors</td><td style="padding:12px 14px">15%</td><td style="padding:12px 14px">12-month vesting (linear)</td></tr>
+            <tr style="background:rgba(255,255,255,.03)"><td style="padding:12px 14px">Community Rewards</td><td style="padding:12px 14px">25%</td><td style="padding:12px 14px">Incentives, campaigns, staking</td></tr>
+            <tr><td style="padding:12px 14px">Reserve</td><td style="padding:12px 14px">10%</td><td style="padding:12px 14px">Strategic partnerships & expansion</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="card" id="presale">
+      <h2 class="h2">Presale</h2>
+      <div class="kv" style="margin-top:8px">
+        <div><strong>Accepted</strong><span>ETH</span></div>
+        <div><strong>Soft / Hard Cap</strong><span>$5k / $10k</span></div>
+        <div><strong>Min / Max</strong><span>0.01 / 2 ETH</span></div>
+        <div><strong>Settlement</strong><span>Ethereum mainnet (subject to change)</span></div>
+      </div>
+      <p class="muted" style="margin-top:10px">
+        Tokens become claimable at TGE per final presale terms. Participants should review the contract and risk disclosures.
+      </p>
+      <p style="margin-top:12px">
+        <a class="btn" href="index.html">Open Presale App →</a>
+      </p>
+    </section>
+
+    <!-- Updated 6-step Roadmap -->
+    <section class="card" id="roadmap">
+      <h2 class="h2">Roadmap</h2>
+      <div class="timeline">
+        <div class="milestone"><strong>Q3 2025</strong><small>Presale Launch • Litepaper v1 • Community channels live</small></div>
+        <div class="milestone"><strong>Q4 2025</strong><small>DEX Listing + Liquidity • Smart-contract Audit • dApp v1</small></div>
+        <div class="milestone"><strong>Q1 2026</strong><small>Restaurant Pilot (5 locations) • POS Prototype • Loyalty ↔ BURGER swap beta</small></div>
+        <div class="milestone"><strong>Q2 2026</strong><small>Mobile Wallet MVP • Staking Rewards v1 • Merchant Dashboard</small></div>
+        <div class="milestone"><strong>Q3 2026</strong><small>50 Merchants Onboarded • Referral Program • Fiat On-Ramp</small></div>
+        <div class="milestone"><strong>Q4 2026</strong><small>Governance v1 • Regional Franchise Pilots • Contracts v2 (post-audit)</small></div>
+      </div>
+    </section>
+
+    <section class="card" id="team">
+      <h2 class="h2">Team</h2>
+      <p class="muted">A cross-functional team of blockchain engineers, restaurant operators, and community builders focused on shipping real-world utility.</p>
+      <ul class="clean">
+        <li>Solidity & dApp engineering</li>
+        <li>Restaurant operations & partnerships</li>
+        <li>Compliance, security, and audits</li>
+        <li>Community & growth</li>
+      </ul>
+    </section>
+
+    <section class="card" id="legal">
+      <h2 class="h2">Legal & Risk</h2>
+      <div class="note" style="border-left:6px solid var(--brand); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border-radius:10px; padding:12px 14px; margin:12px 0">
+        Burger Bucks is a utility token intended for use within the FAST Network ecosystem. This litepaper is for informational
+        purposes only and does not constitute financial, legal, or investment advice. Participation involves risk, including potential
+        loss of funds.
+      </div>
+      <ul class="clean">
+        <li>Smart contract risk, market volatility, regulatory uncertainty.</li>
+        <li>Do your own research; review contracts and disclosures prior to participation.</li>
+        <li>Regional restrictions may apply; comply with local laws and KYC/AML as required.</li>
+      </ul>
+    </section>
+
+    <p class="muted" style="margin-top:10px">© 2025 FAST Network — All rights reserved.</p>
+  </div>
+
+  <!-- ===== Drawer Logic (same UX as index) ===== -->
+  <script>
+    const menuBtn = document.getElementById('menuBtn');
+    const sideNav = document.getElementById('sideNav');
+    const closeNav = document.getElementById('closeNav');
+    const navScrim = document.getElementById('navScrim');
+
+    function fadeOutBurger(){ menuBtn?.classList.add('fade-out'); }
+    function showBurger(){ menuBtn?.classList.remove('fade-out'); menuBtn?.classList.add('fade-in'); setTimeout(()=>menuBtn?.classList.remove('fade-in'), 250); }
+
+    function openNav(){
+      sideNav?.classList.add('open');
+      if (navScrim) navScrim.hidden = false;
+      menuBtn?.setAttribute('aria-expanded','true');
+      sideNav?.setAttribute('aria-hidden','false');
+      document.body.classList.add('nav-open');
+      fadeOutBurger();
+    }
+    function closeNavNow(){
+      sideNav?.classList.remove('open');
+      if (navScrim) navScrim.hidden = true;
+      menuBtn?.setAttribute('aria-expanded','false');
+      sideNav?.setAttribute('aria-hidden','true');
+      document.body.classList.remove('nav-open');
+      showBurger();
+    }
+
+    menuBtn?.addEventListener('click', () => sideNav?.classList.contains('open') ? closeNavNow() : openNav());
+    closeNav?.addEventListener('click', closeNavNow);
+    navScrim?.addEventListener('click', closeNavNow);
+
+    // Smooth-scroll & close on nav link click
+    sideNav?.addEventListener('click', (e)=>{
+      const a = e.target.closest('a[data-close-nav]');
+      if(!a) return;
+      e.preventDefault();
+      const id = (a.getAttribute('href')||'').replace('#','');
+      closeNavNow();
+      if (id) document.getElementById(id)?.scrollIntoView({behavior:'smooth', block:'start'});
+    });
+
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && sideNav?.classList.contains('open')) closeNavNow(); });
+  </script>
+</body>
+</html>

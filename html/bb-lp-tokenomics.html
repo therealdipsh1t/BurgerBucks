@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Burger Bucks — Tokenomics & Roadmap</title>
+<style>
+  :root{
+    --bg-1:#3e0d17; --bg-2:#7a1e2f; --bg-3:#a8324a;
+    --card:rgba(255,255,255,.08); --stroke:rgba(255,255,255,.18);
+    --text:#f6f6f7; --muted:#e9d9de; --accent:#ffd166;
+    --shadow:0 10px 25px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+    --radius:20px; --blur:10px;
+
+    /* Donut slice colors */
+    --c-presale:#ffd166;
+    --c-treasury:#ff9f1c;
+    --c-liquidity:#2ec4b6;
+    --c-ecosystem:#8ecae6;
+    --c-team:#f77f00;
+  }
+
+  /* Reflective burgundy backdrop */
+  body{
+    margin:0; color:var(--text);
+    font: 500 16px/1.6 Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    background:
+      radial-gradient(1200px 700px at 75% 0%, rgba(255,255,255,.14), transparent 40%),
+      radial-gradient(900px 500px at 15% 15%, rgba(255,255,255,.1), transparent 45%),
+      radial-gradient(1400px 900px at 50% 120%, rgba(0,0,0,.35), transparent 50%),
+      linear-gradient(135deg, var(--bg-1), var(--bg-2) 55%, var(--bg-3));
+    background-attachment: fixed;
+    min-height:100dvh;
+  }
+  .container{ width:min(1100px, 92vw); margin: clamp(16px,4vw,40px) auto; }
+
+  header{ display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .brand{ display:flex; gap:12px; align-items:center; }
+  .logo{ width:44px;height:44px;border-radius:12px; background:
+    radial-gradient(circle at 30% 30%, #fff3, #fff0 40%),
+    linear-gradient(135deg, #ffb703, #fb8500); box-shadow:var(--shadow); }
+  h1{ margin:0; font-size: clamp(24px, 4vw, 34px); letter-spacing:.3px;}
+  .subtitle{ margin:.25rem 0 0; font-size:14px; color:var(--muted); opacity:.9; }
+
+  /* Buttons */
+  .btn{
+    appearance:none;border:1px solid var(--stroke);
+    background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.03));
+    color:var(--text); padding:10px 14px;border-radius:12px;cursor:pointer;
+    box-shadow:var(--shadow); backdrop-filter: blur(var(--blur));
+    font-weight:700; display:inline-block; text-decoration:none;
+  }
+  .btn:hover{ transform: translateY(-1px); border-color:#ffffff50; }
+  .btn.primary{ border-color:transparent; background:linear-gradient(180deg, var(--accent), #ffb703); color:#3a1600; }
+
+  /* Cards */
+  .card{
+    background:var(--card); border:1px solid var(--stroke);
+    border-radius:var(--radius); box-shadow:var(--shadow); backdrop-filter: blur(var(--blur));
+    padding:18px 18px 16px; margin:14px 0;
+  }
+  .card h2{ margin:0 0 10px; font-size: clamp(18px, 2.5vw, 22px); }
+  .muted{ color:var(--muted); opacity:.95; }
+
+  .grid{ display:grid; gap:16px; }
+  @media (min-width: 900px){
+    .grid-2{ grid-template-columns: 1fr 1fr; }
+    .grid-3{ grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* Stats blocks */
+  .stats{ display:grid; grid-template-columns: repeat(2,1fr); gap:10px; }
+  @media (min-width:720px){ .stats{ grid-template-columns: repeat(4,1fr);} }
+  .stat{ border:1px solid var(--stroke); border-radius:14px; padding:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); }
+  .label{ font-size:12px; color:var(--muted); }
+  .value{ font-size:20px; font-weight:800; margin-top:4px; letter-spacing:.3px; }
+
+  /* Tables */
+  table{ width:100%; border-collapse:separate; border-spacing:0; overflow:hidden; border-radius:14px; }
+  th, td{ padding:12px 12px; text-align:left; }
+  thead th{
+    font-size:13px; color:#2b1b00; background:linear-gradient(180deg, var(--accent), #ffb703);
+    position:sticky; top:0;
+  }
+  tbody tr{ background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); }
+  tbody tr+tr td{ border-top:1px solid var(--stroke); }
+
+  /* Callouts */
+  .callout{
+    border:1px dashed #ffe08a; border-radius:14px; padding:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  }
+
+  /* Donut chart */
+  .donut-wrap{ display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+  .donut{
+    --size: 220px;
+    width:var(--size); height:var(--size); border-radius:50%;
+    background:
+      conic-gradient(
+        var(--c-presale) 0 30%,
+        var(--c-treasury) 30% 55%,
+        var(--c-liquidity) 55% 75%,
+        var(--c-ecosystem) 75% 90%,
+        var(--c-team) 90% 100%
+      );
+    position:relative; box-shadow:var(--shadow); border:1px solid var(--stroke);
+  }
+  .donut::after{
+    content:""; position:absolute; inset:18%;
+    background:linear-gradient(135deg, rgba(0,0,0,.35), rgba(255,255,255,.04));
+    border-radius:50%; border:1px solid var(--stroke);
+    box-shadow: inset 0 6px 18px rgba(0,0,0,.45);
+  }
+  .legend{ display:grid; gap:8px; min-width:260px; }
+  .leg-row{ display:flex; align-items:center; gap:10px; }
+  .swatch{ width:14px; height:14px; border-radius:4px; }
+  .sw-presale{ background:var(--c-presale);}
+  .sw-treasury{ background:var(--c-treasury);}
+  .sw-liquidity{ background:var(--c-liquidity);}
+  .sw-ecosystem{ background:var(--c-ecosystem);}
+  .sw-team{ background:var(--c-team);}
+  .leg-row b{ min-width:110px; }
+
+  footer{ text-align:center; font-size:12px; opacity:.85; margin:20px 0 6px; }
+  a{ color:#ffe08a; }
+</style>
+</head>
+<body>
+  <script
+  src="./bb-wallet.js"
+  data-wc-project="YOUR_WALLETCONNECT_PROJECT_ID"
+  data-dashboard="./burger-bucks-dashboard.html"
+  data-chains="1,137,56,42161"
+  data-auto-redirect="false"
+  defer></script>
+<!-- set to "true" if you want auto-redirect after connect -->
+
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>🍔 Burger Bucks — Tokenomics & Roadmap</h1>
+          <p class="subtitle">Clear allocations, real utility, and a staged plan for growth.</p>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn" href="./bb-lp.html">Litepaper</a>
+        <a class="btn primary" href="./burger-bucks-dashboard.html">Open Dashboard</a>
+      </div>
+    </header>
+
+    <!-- TOKENOMICS (Donut + Table) -->
+    <section class="card" id="tokenomics" aria-labelledby="tk-title">
+      <h2 id="tk-title">Tokenomics Overview</h2>
+      <p class="muted">Balanced incentives for presale holders, partners, and long-term sustainability.</p>
+
+      <div class="grid grid-2" style="align-items:center;">
+        <div>
+          <div class="donut-wrap" role="img" aria-label="Token allocation donut chart">
+            <div class="donut" aria-hidden="true" title="Token Allocation Donut"></div>
+            <div class="legend" aria-hidden="true">
+              <div class="leg-row"><span class="swatch sw-presale"></span><b>Presale</b><span>30% (3B)</span></div>
+              <div class="leg-row"><span class="swatch sw-treasury"></span><b>DAO Treasury</b><span>25% (2.5B)</span></div>
+              <div class="leg-row"><span class="swatch sw-liquidity"></span><b>Liquidity & Partnerships</b><span>20% (2B)</span></div>
+              <div class="leg-row"><span class="swatch sw-ecosystem"></span><b>Ecosystem & Rewards</b><span>15% (1.5B)</span></div>
+              <div class="leg-row"><span class="swatch sw-team"></span><b>Team & Advisors</b><span>10% (1B)</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <table aria-label="Token allocation details">
+            <thead>
+              <tr><th>Category</th><th>Allocation</th><th>Notes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Presale</td><td>30% (3B)</td><td>Eligible for auto-rewarded staking at launch.</td></tr>
+              <tr><td>DAO Treasury</td><td>25% (2.5B)</td><td>Governed spend (liquidity, partnerships, marketing).</td></tr>
+              <tr><td>Liquidity & Partnerships</td><td>20% (2B)</td><td>Rewards for LPs & restaurant partners (tiered boosts).</td></tr>
+              <tr><td>Ecosystem & Rewards</td><td>15% (1.5B)</td><td>Staking incentives, cashback, community airdrops.</td></tr>
+              <tr><td>Team & Advisors</td><td>10% (1B)</td><td>Vested 24–36 months; aligned with holders.</td></tr>
+            </tbody>
+          </table>
+
+          <div class="stats" style="margin-top:12px;">
+            <div class="stat"><div class="label">Total Supply</div><div class="value">10,000,000,000</div></div>
+            <div class="stat"><div class="label">Staking APR (up to)</div><div class="value">30%</div></div>
+            <div class="stat"><div class="label">Partner Boost (up to)</div><div class="value">+50%</div></div>
+            <div class="stat"><div class="label">Reward Halving</div><div class="value">~Every 2 yrs</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRESALE & STAKING SUMMARY -->
+    <section class="card" id="staking" aria-labelledby="staking-title">
+      <h2 id="staking-title">Presale & Staking (At-a-Glance)</h2>
+      <div class="grid grid-2">
+        <div class="callout">
+          <strong>Presale Staking (Auto-Rewards)</strong>
+          <ul>
+            <li>Lock immediately after purchase (30/90/180 days).</li>
+            <li>Example APRs: 5% / 15% / 30% (DAO-governed).</li>
+            <li>Early unstake penalties redistribute to loyal stakers.</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>Liquidity Partner Tiers</strong>
+          <ul>
+            <li>Stake BURGER/ETH or BURGER/USDT LP tokens.</li>
+            <li>Tier boosts: +10% / +25% / +50%.</li>
+            <li>Tier 3 perks: proposal rights, leaderboard visibility.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROADMAP -->
+    <section class="card" id="roadmap" aria-labelledby="roadmap-title">
+      <h2 id="roadmap-title">Roadmap</h2>
+      <div class="grid grid-3">
+        <div class="callout">
+          <strong>Phase 1 — Foundation</strong>
+          <ul>
+            <li>Branding, tokenomics, website (SEO).</li>
+            <li>Contracts on testnet; community channels live.</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>Phase 2 — Presale</strong>
+          <ul>
+            <li>Secure presale; staking locks active.</li>
+            <li>Whitelist + marketing; transparency dashboards.</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>Phase 3 — DAO & Listing</strong>
+          <ul>
+            <li>Activate Governor + Timelock.</li>
+            <li>List BURGER/ETH; seed initial liquidity.</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>Phase 4 — Ecosystem</strong>
+          <ul>
+            <li>Restaurant pilots; 2–5% BURGER cashback.</li>
+            <li>Loyalty NFTs; partner leaderboard.</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>Phase 5 — Expansion</strong>
+          <ul>
+            <li>Cross-chain bridges; franchise DAO fund.</li>
+            <li>Marketing 2.0; major listings.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- GOVERNANCE & SUSTAINABILITY -->
+    <section class="card" id="gov" aria-labelledby="gov-title">
+      <h2 id="gov-title">Governance & Sustainability</h2>
+      <div class="grid grid-2">
+        <div>
+          <ul>
+            <li><strong>On-chain DAO:</strong> Governor + Timelock.</li>
+            <li><strong>Proposal threshold:</strong> e.g., 1,000,000 BURGER.</li>
+            <li><strong>Quadratic voting:</strong> Fairer outcomes for the community.</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>Value Alignment</strong>
+          <ul>
+            <li>Emission halving ~every 2 years.</li>
+            <li>DAO-driven buyback/burn options.</li>
+            <li>Open-source contracts & third-party audits.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="card" aria-labelledby="cta-title">
+      <h2 id="cta-title">Ready to Get Involved?</h2>
+      <p class="muted">Explore live metrics or read the Litepaper for the full vision.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn" href="./bb-lp.html">Read Litepaper</a>
+        <a class="btn primary" href="./burger-bucks-dashboard.html">Open Dashboard</a>
+      </div>
+    </section>
+
+    <footer>
+      © Burger Bucks DAO — Community-governed restaurant economy •
+      <a href="#tokenomics">Back to top</a>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Burger Bucks — Rewards Dashboard</title>
+  <style>
+    :root{
+      --bg-1: #3e0d17;   /* deep burgundy */
+      --bg-2: #7a1e2f;   /* mid burgundy */
+      --bg-3: #a8324a;   /* highlight burgundy */
+      --card: rgba(255,255,255,.08);
+      --stroke: rgba(255,255,255,.18);
+      --text: #f6f6f7;
+      --muted: #e9d9de;
+      --accent: #ffd166; /* warm accent for highlights */
+      --good: #7ee787;
+      --warn: #ffd54d;
+      --bad:  #ff7b72;
+      --shadow: 0 10px 25px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);
+      --radius: 20px;
+      --blur: 10px;
+    }
+
+    /* Reflective burgundy backdrop (subtle sheen + vignette) */
+    body{
+      margin:0;
+      color:var(--text);
+      font: 500 16px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+      min-height:100dvh;
+      background:
+        radial-gradient(1200px 700px at 75% 0%, rgba(255,255,255,.14), transparent 40%),
+        radial-gradient(900px 500px at 15% 15%, rgba(255,255,255,.1), transparent 45%),
+        radial-gradient(1400px 900px at 50% 120%, rgba(0,0,0,.35), transparent 50%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2) 55%, var(--bg-3));
+      background-attachment: fixed;
+    }
+
+    .container{
+      width:min(1200px, 92vw);
+      margin: clamp(16px, 4vw, 40px) auto;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:24px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:42px;height:42px;border-radius:12px;
+      background:
+        radial-gradient(circle at 30% 30%, #fff3, #fff0 40%),
+        linear-gradient(135deg, #ffb703, #fb8500);
+      box-shadow: var(--shadow);
+    }
+    h1{
+      margin:0;
+      font-size: clamp(22px, 3.4vw, 30px);
+      letter-spacing:.3px;
+    }
+    .subtitle{
+      margin:2px 0 0;
+      font-size:14px;color:var(--muted);opacity:.9;
+    }
+
+    .actions{
+      display:flex; gap:10px; flex-wrap:wrap;
+    }
+    .btn{
+      appearance:none;border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.03));
+      color:var(--text);
+      padding:10px 14px;border-radius:12px;cursor:pointer;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(var(--blur));
+      transition: transform .08s ease, border-color .2s ease, background .2s ease;
+      font-weight:600;
+    }
+    .btn:hover{ transform: translateY(-1px); border-color:#ffffff50; }
+    .btn:active{ transform: translateY(1px) scale(.99); }
+    .btn.primary{ border-color:transparent; background:linear-gradient(180deg, #ffd166, #ffb703); color:#3a1600; }
+
+    /* Grid layout */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:16px;
+    }
+
+    /* Bubble cards (glassmorphism) */
+    .card{
+      grid-column: span 12;
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(var(--blur));
+      padding:18px 18px 16px;
+    }
+    @media (min-width: 900px){
+      .span-6{ grid-column: span 6; }
+      .span-4{ grid-column: span 4; }
+      .span-8{ grid-column: span 8; }
+    }
+
+    .card h2{
+      margin:0 0 10px;
+      font-size: clamp(18px, 2.5vw, 20px);
+    }
+    .meta{
+      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;
+      color:#f5e9ec; opacity:.9; font-size:13px;
+    }
+    .pill{
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.02));
+      padding:6px 10px; border-radius:999px;
+    }
+
+    /* Stats */
+    .stats{ display:grid; grid-template-columns: repeat(2, 1fr); gap:10px; }
+    @media (min-width: 720px){ .stats{ grid-template-columns: repeat(4, 1fr);} }
+    .stat{
+      border: 1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+      border-radius:14px; padding:12px;
+    }
+    .stat .label{ font-size:12px; color:var(--muted); }
+    .stat .value{ font-size:20px; font-weight:800; margin-top:4px; letter-spacing:.3px; }
+
+    /* Progress */
+    .progress{
+      width:100%; height:10px; border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border:1px solid var(--stroke); overflow:hidden;
+    }
+    .progress > i{
+      display:block; height:100%;
+      background: linear-gradient(90deg, var(--accent), #ffb703);
+      width:0%;
+      transition: width .6s cubic-bezier(.2,.8,.2,1);
+    }
+
+    /* List styles */
+    .list{ display:grid; gap:10px; }
+    .row{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+      border-radius:14px; padding:12px;
+    }
+    .left{ display:flex; align-items:center; gap:10px; min-width:0; }
+    .tag{
+      font-size:12px; padding:4px 8px; border-radius:999px;
+      border:1px solid var(--stroke); color:#231;
+      background:linear-gradient(180deg, #7ee787, #4ade80);
+    }
+    .badge{
+      font-size:12px; padding:4px 8px; border-radius:999px;
+      border:1px solid var(--stroke); color:#2b1b00;
+      background:linear-gradient(180deg, #ffd166, #ffb703);
+    }
+    .muted{ color:var(--muted); font-size:13px; }
+
+    /* Footer / helper text */
+    .helper{ margin-top:14px; color:#f3e3e8; font-size:12px; opacity:.9; }
+
+    /* Small inline icons */
+    .ico{ width:18px; height:18px; display:inline-block; vertical-align:-3px; opacity:.9; }
+    .tier-1{ background: radial-gradient(circle at 30% 30%, #fff7, #fff0 40%), linear-gradient(135deg, #cfd9df, #e2ebf0); border-radius:6px; }
+    .tier-2{ background: radial-gradient(circle at 30% 30%, #fff7, #fff0 40%), linear-gradient(135deg, #c0c0c0, #a8b0b8); border-radius:6px; }
+    .tier-3{ background: radial-gradient(circle at 30% 30%, #fff7, #fff0 40%), linear-gradient(135deg, #ffd166, #ffb703); border-radius:6px; }
+
+    a{ color:#ffe08a; text-decoration: none; }
+    a:hover{ text-decoration: underline; }
+    .small{ font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true" title="Burger Bucks"></div>
+        <div>
+          <h1>Burger Bucks — Rewards Dashboard</h1>
+          <p class="subtitle">Track presale staking, liquidity partner tiers, and DAO activity in real time.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="refreshBtn" title="Refresh on-chain data">↻ Refresh</button>
+        <button class="btn primary" id="connectBtn">Connect Wallet</button>
+      </div>
+    </header>
+
+    <!-- USER OVERVIEW -->
+    <section class="card" aria-labelledby="overview-title">
+      <h2 id="overview-title">User Overview</h2>
+      <div class="meta">
+        <span class="pill">Wallet: <span id="walletLabel" class="small">Not connected</span></span>
+        <span class="pill">Network: <span id="networkLabel" class="small">—</span></span>
+      </div>
+      <div class="stats" role="list">
+        <div class="stat" role="listitem">
+          <div class="label">BURGER Balance</div>
+          <div class="value" id="burgerBalance">—</div>
+        </div>
+        <div class="stat" role="listitem">
+          <div class="label">LP Tokens</div>
+          <div class="value" id="lpBalance">—</div>
+        </div>
+        <div class="stat" role="listitem">
+          <div class="label">Staked (Total)</div>
+          <div class="value" id="stakedTotal">—</div>
+        </div>
+        <div class="stat" role="listitem">
+          <div class="label">Rewards (Live)</div>
+          <div class="value" id="rewardLive">—</div>
+        </div>
+      </div>
+      <p class="helper">Tip: rewards can be auto-compounding (presale) and boosted (liquidity tiers). Configure below.</p>
+    </section>
+
+    <div class="grid">
+      <!-- PRESALE STAKING -->
+      <section class="card span-6" aria-labelledby="presale-title">
+        <h2 id="presale-title">Presale Staking</h2>
+        <div class="list">
+          <div class="row">
+            <div class="left">
+              <span class="badge">Lock</span>
+              <div>
+                <div><strong id="lockTier">—</strong> <span class="muted">(30d / 90d / 180d)</span></div>
+                <div class="small muted">Unlock Date: <span id="unlockDate">—</span></div>
+              </div>
+            </div>
+            <div><strong id="apr">—</strong> APR</div>
+          </div>
+          <div class="row" aria-label="Progress toward unlock">
+            <div style="flex:1">
+              <div class="small muted" style="margin-bottom:6px;">Time Progress</div>
+              <div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+            </div>
+            <div style="min-width:70px; text-align:right"><span id="progressPct">0%</span></div>
+          </div>
+          <div class="row">
+            <div class="left">
+              <span class="tag">Accrued</span>
+              <div><strong id="presaleAccrued">—</strong> BURGER</div>
+            </div>
+            <div class="left">
+              <button class="btn" id="claimPresaleBtn" title="Claim presale rewards">Claim</button>
+              <button class="btn" id="restakeBtn" title="Compound into stake">Compound</button>
+            </div>
+          </div>
+        </div>
+        <p class="helper">APR scales with lock: 30d→5%, 90d→15%, 180d→30% (example). Early unstake penalties can redistribute to loyal stakers.</p>
+      </section>
+
+      <!-- LIQUIDITY PARTNER STAKING -->
+      <section class="card span-6" aria-labelledby="lp-title">
+        <h2 id="lp-title">Liquidity Partner Staking</h2>
+        <div class="list">
+          <div class="row">
+            <div class="left">
+              <span id="tierIcon" class="ico tier-1" title="Tier badge" aria-hidden="true"></span>
+              <div>
+                <div><strong>Tier:</strong> <span id="lpTier">—</span> <span class="muted">(BURGER/ETH or BURGER/USDT LP)</span></div>
+                <div class="small muted">Boost: <span id="lpBoost">—</span></div>
+              </div>
+            </div>
+            <div class="left">
+              <button class="btn" id="stakeLpBtn" title="Stake LP tokens">Stake LP</button>
+              <button class="btn" id="unstakeLpBtn" title="Unstake LP tokens">Unstake</button>
+            </div>
+          </div>
+          <div class="row">
+            <div class="left">
+              <span class="tag">LP Staked</span>
+              <div><strong id="lpStaked">—</strong></div>
+            </div>
+            <div class="left">
+              <span class="tag">Rewards</span>
+              <div><strong id="lpRewards">—</strong> BURGER</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="left">
+              <span class="badge">DAO Perks</span>
+              <div class="small muted" id="daoPerks">—</div>
+            </div>
+            <div>
+              <button class="btn" id="claimLpBtn" title="Claim LP rewards">Claim</button>
+            </div>
+          </div>
+        </div>
+        <p class="helper">Tier 1: 10k–100k LP (10% boost) · Tier 2: 100k–1M (25%) · Tier 3: 1M+ (50% + proposal rights).</p>
+      </section>
+    </div>
+
+    <div class="grid">
+      <!-- COMMUNITY & DAO METRICS -->
+      <section class="card span-8" aria-labelledby="community-title">
+        <h2 id="community-title">Community & DAO Metrics</h2>
+        <div class="stats">
+          <div class="stat">
+            <div class="label">Total BURGER Staked</div>
+            <div class="value" id="communityStaked">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">DAO Treasury</div>
+            <div class="value" id="treasuryBalance">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">Active Proposals</div>
+            <div class="value" id="activeProposals">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">Top Partners (Tier 3)</div>
+            <div class="value" id="topPartners">—</div>
+          </div>
+        </div>
+        <p class="helper">These figures help investors gauge sustainability and governance activity at a glance.</p>
+      </section>
+
+      <!-- ACHIEVEMENTS / BADGES -->
+      <section class="card span-4" aria-labelledby="achievements-title">
+        <h2 id="achievements-title">Achievements</h2>
+        <div class="list" id="badgesList">
+          <!-- populated via JS -->
+        </div>
+        <p class="helper">Earn badges like <em>Early Presaler</em>, <em>Burger Whale</em>, and <em>DAO Chef</em> by participating.</p>
+      </section>
+    </div>
+
+    <!-- PROPOSALS -->
+    <section class="card" aria-labelledby="proposals-title">
+      <h2 id="proposals-title">Active Proposals</h2>
+      <div class="list" id="proposalsList">
+        <!-- populated via JS -->
+      </div>
+      <p class="helper">Tier 3 partners may gain proposal rights; quadratic voting can keep governance fair for smaller holders.</p>
+    </section>
+
+    <footer class="small" style="opacity:.85; text-align:center; margin:20px 0 6px;">
+      Built for the Burger Bucks ecosystem. <span class="muted">This is a reference UI with mock data—wire it to your contracts via ethers.js or wagmi.</span>
+    </footer>
+  </div>
+
+  <script>
+    // ================================
+    // Mock Data (replace with on-chain)
+    // ================================
+    const MOCK = {
+      wallet: "0x77f5...BB89",
+      network: "LightchainAI Testnet",
+      burgerBalance: 1_234_567.89,
+      lpBalance: 12_345.67,
+      stakedTotal: 888_888.00,
+      rewardLive: 4321.01,
+
+      presale: {
+        tier: "90d",
+        apr: 15,
+        start: Date.now() - (1000*60*60*24*17),   // 17 days ago
+        end:   Date.now() + (1000*60*60*24*73),    // 73 days left
+        accrued: 1234.56
+      },
+
+      lp: {
+        tier: 2,
+        boostPct: 25,
+        stakedLP: 210_000.00,
+        rewards: 9876.54,
+        daoPerks: ["Priority vote weight boost", "Early access to franchise proposals"]
+      },
+
+      community: {
+        totalStaked: 3_450_000_000,
+        treasury: 2_500_000_000,
+        activeProposals: 3,
+        topPartners: 7
+      },
+
+      achievements: [
+        { name: "Early Presaler", note: "Staked before TGE" },
+        { name: "Burger Whale", note: "≥ 1,000,000 BURGER staked" },
+        { name: "DAO Chef", note: "Submitted a governance proposal" }
+      ],
+
+      proposals: [
+        { title: "Fund BURGER/ETH Liquidity (Phase 1)", status: "Voting", endsIn: "2d 11h" },
+        { title: "Onboard GrillMaster Diner (Tier 3)", status: "Discussion", endsIn: "—" },
+        { title: "Activate Seasonal Boost: National Burger Day", status: "Queued", endsIn: "T-5d" }
+      ]
+    };
+
+    // Utility formatters
+    const fmt = (n) => n === "—" || n === undefined ? "—" :
+      Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(n);
+
+    function setText(id, value){ const el = document.getElementById(id); if(el) el.textContent = value; }
+
+    function setProgress(idBar, idPct, start, end){
+      const total = end - start;
+      const now = Date.now();
+      const elapsed = Math.max(0, Math.min(total, now - start));
+      const pct = total > 0 ? (elapsed / total) * 100 : 0;
+      const bar = document.getElementById(idBar);
+      const pctEl = document.getElementById(idPct);
+      if(bar) bar.style.width = pct.toFixed(1) + "%";
+      if(pctEl) pctEl.textContent = pct.toFixed(0) + "%";
+    }
+
+    function setTierIcon(tier){
+      const el = document.getElementById("tierIcon");
+      el.classList.remove("tier-1","tier-2","tier-3");
+      el.classList.add(tier >= 3 ? "tier-3" : tier === 2 ? "tier-2" : "tier-1");
+    }
+
+    function renderBadges(list){
+      const box = document.getElementById("badgesList");
+      box.innerHTML = "";
+      list.forEach(({name, note})=>{
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `
+          <div class="left">
+            <span class="badge">${name}</span>
+            <div class="muted small">${note}</div>
+          </div>
+          <div class="small">✓</div>
+        `;
+        box.appendChild(row);
+      });
+    }
+
+    function renderProposals(list){
+      const box = document.getElementById("proposalsList");
+      box.innerHTML = "";
+      list.forEach(({title, status, endsIn})=>{
+        const row = document.createElement("div");
+        row.className = "row";
+        row.innerHTML = `
+          <div class="left">
+            <span class="pill">${status}</span>
+            <div style="min-width:0">
+              <div><strong>${title}</strong></div>
+              <div class="muted small">Ends: ${endsIn}</div>
+            </div>
+          </div>
+          <a class="small" href="#" title="Open in governance app">Open ↗</a>
+        `;
+        box.appendChild(row);
+      });
+    }
+
+    // ================================
+    // Initial Render (mock)
+    // ================================
+    function hydrate(){
+      setText("walletLabel", MOCK.wallet);
+      setText("networkLabel", MOCK.network);
+      setText("burgerBalance", fmt(MOCK.burgerBalance));
+      setText("lpBalance", fmt(MOCK.lpBalance));
+      setText("stakedTotal", fmt(MOCK.stakedTotal));
+      setText("rewardLive", fmt(MOCK.rewardLive));
+
+      // Presale
+      setText("lockTier", MOCK.presale.tier);
+      setText("apr", MOCK.presale.apr + "%");
+      setText("presaleAccrued", fmt(MOCK.presale.accrued));
+      const unlock = new Date(MOCK.presale.end).toLocaleString();
+      setText("unlockDate", unlock);
+      setProgress("progressBar","progressPct",MOCK.presale.start, MOCK.presale.end);
+
+      // LP
+      setText("lpTier", MOCK.lp.tier);
+      setText("lpBoost", "+" + MOCK.lp.boostPct + "%");
+      setText("lpStaked", fmt(MOCK.lp.stakedLP));
+      setText("lpRewards", fmt(MOCK.lp.rewards));
+      setTierIcon(MOCK.lp.tier);
+      setText("daoPerks", MOCK.lp.daoPerks.join(" • "));
+
+      // Community
+      setText("communityStaked", fmt(MOCK.community.totalStaked));
+      setText("treasuryBalance", fmt(MOCK.community.treasury));
+      setText("activeProposals", fmt(MOCK.community.activeProposals));
+      setText("topPartners", fmt(MOCK.community.topPartners));
+
+      // Lists
+      renderBadges(MOCK.achievements);
+      renderProposals(MOCK.proposals);
+    }
+
+    // Live reward counter (mock animation)
+    let live = MOCK.rewardLive;
+    setInterval(()=>{
+      live += Math.random() * 2.5; // mock drip
+      setText("rewardLive", fmt(live));
+    }, 1200);
+
+    // Buttons (stub handlers)
+    document.getElementById("connectBtn").addEventListener("click", async ()=>{
+      // TODO: Replace with real wallet connect (ethers.js or wagmi)
+      alert("Connect wallet: integrate ethers.js or wagmi here.");
+    });
+    document.getElementById("refreshBtn").addEventListener("click", ()=>{
+      // TODO: Call your read-only contract methods and re-hydrate with live values.
+      hydrate();
+    });
+    document.getElementById("claimPresaleBtn").addEventListener("click", ()=>{
+      // TODO: presaleStaking.claimRewards()
+      alert("Claim Presale Rewards: wire to your PresaleStaking contract.");
+    });
+    document.getElementById("restakeBtn").addEventListener("click", ()=>{
+      // TODO: presaleStaking.compound()
+      alert("Compound Rewards: wire to your PresaleStaking contract.");
+    });
+    document.getElementById("stakeLpBtn").addEventListener("click", ()=>{
+      // TODO: liquidityStaking.stake(amount)
+      alert("Stake LP: open a modal to enter LP amount & call your contract.");
+    });
+    document.getElementById("unstakeLpBtn").addEventListener("click", ()=>{
+      // TODO: liquidityStaking.unstake(amount)
+      alert("Unstake LP: open a modal to enter amount & call your contract.");
+    });
+    document.getElementById("claimLpBtn").addEventListener("click", ()=>{
+      // TODO: liquidityStaking.claimRewards()
+      alert("Claim LP Rewards: wire to your LiquidityStaking contract.");
+    });
+
+    // Kickoff
+    hydrate();
+  </script>
+</body>
+</html>

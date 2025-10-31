@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Burger Bucks Presale</title>
+
+  <!-- Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- (Optional) WalletConnect / Web3Modal -->
+  <script src="https://unpkg.com/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <script src="https://unpkg.com/@web3modal/ethereum@3"></script>
+  <script src="https://unpkg.com/@web3modal/html@3"></script>
+
+  <style>
+    :root{
+      /* Burgundy base */
+      --bg:#2e0c12; --bg2:#42121a; --card:#1a1316;
+      --text:#f2f3f5; --muted:#b7bbc3;
+
+      /* Brand & accents */
+      --brand:#e11d2e; --brand-600:#c11224;
+      --amber:#ffbf3b; --amber-600:#e5aa22;
+      --ring:#ff676720;
+
+      --radius:18px; --shadow:0 20px 40px rgba(0,0,0,.45);
+      --grad-title: linear-gradient(92deg,#fff 0%,#ffd7d7 30%,#ff9f9f 60%,#ffd37e 100%);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--text)}
+    body{
+      background:
+        radial-gradient(1200px 800px at 10% -10%, #ff6363 0, transparent 35%),
+        radial-gradient(900px 600px at 110% 10%, #ffb70333 0, transparent 45%),
+        linear-gradient(160deg, var(--bg), var(--bg2));
+    }
+    .container{max-width:1200px; margin:0 auto; padding:28px 20px 120px}
+
+    /* ===== Header ===== */
+    header.site-header{
+      position: sticky; top: 0; z-index: 100;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 12px 14px; margin-bottom: 22px;
+      border: 1px solid #ffffff22; border-radius: 18px;
+      background:
+        radial-gradient(100% 180% at 0% 0%, rgba(255,255,255,.10), rgba(255,255,255,.03) 60%),
+        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+      backdrop-filter: blur(7px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+    }
+    .brand{display:flex; align-items:center; gap:12px}
+    .logo-chip{
+      width:48px; height:48px; border-radius:14px; display:grid; place-items:center;
+      background: radial-gradient(120% 120% at 20% 10%, #ffffff22, #0000), var(--card);
+      border:1px solid #ffffff24; box-shadow:0 10px 18px rgba(0,0,0,.45); overflow:hidden;
+    }
+    .title{margin:0; line-height:1.05; font-size:28px; font-weight:1000; letter-spacing:.3px;
+      background: linear-gradient(90deg, #fff 0%, #ffb703 40%, #ff6363 100%);
+      -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 1px 2px rgba(0,0,0,.25)}
+    .subtitle{display:block; font-size:14px; color:var(--muted); margin-top:3px; font-weight:500}
+    .subtitle:after{content:""; display:block; height:2px; width:140px; margin-top:6px; background: linear-gradient(90deg, var(--brand), transparent); border-radius:999px; opacity:.8}
+
+    /* Buttons */
+    .btn{background:var(--amber); color:#0c0d0f; padding:12px 18px; border-radius:12px; font-weight:900; border:none; cursor:pointer; box-shadow:0 12px 26px rgba(255,191,59,.35)}
+    .btn:hover{background:var(--amber-600)}
+    .btn.secondary{background:transparent; color:var(--amber); border:1.6px solid var(--amber); box-shadow:none}
+
+    /* Menu button (burger) */
+    .icon-btn{
+      appearance:none; border:0; background:var(--card); cursor:pointer;
+      display:inline-flex; align-items:center; justify-content:center;
+      width:46px; height:46px; margin-right:8px; border-radius:14px;
+      transition: transform .22s ease, background .22s ease, box-shadow .22s ease, opacity .25s ease;
+      box-shadow:0 6px 12px rgba(0,0,0,.35);
+    }
+    .icon-btn:hover{ background:var(--amber); transform:translateY(-2px); box-shadow:0 10px 18px rgba(0,0,0,.45) }
+    .icon-btn.fade-out{ opacity:0; pointer-events:none }
+    .icon-btn.fade-in{ opacity:1 }
+    .burger-svg{ display:block; filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); transition: transform .25s ease }
+    .icon-btn:hover .burger-svg{ transform: translateY(-1px) }
+
+    /* Sidenav */
+    .sidenav{position:fixed; z-index:120; inset:0 auto 0 0; width:280px; max-width:86vw; background:var(--card); border-right:1px solid #ffffff22; box-shadow:var(--shadow); transform:translateX(-100%); transition:transform .25s ease; display:flex; flex-direction:column}
+    .sidenav.open{transform:translateX(0)}
+    .sidenav-header{display:flex; align-items:center; justify-content:space-between; padding:14px; border-bottom:1px solid #ffffff18; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02))}
+    .sidenav-brand{ display:flex; align-items:center; gap:10px; color:var(--text) }
+    .logo-chip.small{width:36px; height:36px; border-radius:10px}
+    .sidenav ul{list-style:none; margin:0; padding:10px}
+    .sidenav li{margin:6px 0}
+    .sidenav a{display:block; padding:10px 12px; border-radius:10px; text-decoration:none; color:var(--text); background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid #ffffff12}
+    .sidenav a:hover{border-color:#ffffff28; transform:translateX(2px)}
+    .scrim{position:fixed; inset:0; z-index:110; background:rgba(0,0,0,.55); backdrop-filter:blur(1.5px)}
+    body.nav-open{ overflow:hidden }
+
+    /* Hero */
+    .hero.card{text-align:center; padding:40px 22px}
+    .hero h2{
+      font-size:32px; font-weight:900; margin-bottom:10px;
+      background:linear-gradient(90deg,#fff,#ffb703,#ff6363);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .hero p{font-size:18px; max-width:700px; margin:0 auto; color:var(--muted); line-height:1.5}
+
+    /* Sections/cards */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid #ffffff18; border-radius:var(--radius); box-shadow:var(--shadow); padding:22px; margin-top:18px}
+    .section-title{margin:0 0 8px}
+    .muted{color:var(--muted)}
+    .grid{display:grid; grid-template-columns:1fr; gap:18px; margin-top:18px}
+    @media (min-width:980px){ .grid{grid-template-columns:1.2fr .8fr} }
+
+    /* Stats */
+    .kv{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .kv div{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border:1px solid #ffffff12; border-radius:12px; padding:12px}
+    .kv strong{display:block; font-size:13px; color:var(--muted)}
+    .kv span{font-weight:800; font-size:18px}
+
+    /* Chart */
+    .chart-wrap{display:grid; place-items:center; padding:.5rem}
+    #tokenomicsChart{max-height:320px; width:100% !important; height:auto !important; aspect-ratio:1/1}
+
+    /* Roadmap timeline */
+    .timeline{position:relative; margin-top:6px; padding-left:26px}
+    .timeline:before{content:""; position:absolute; left:10px; top:4px; bottom:4px; width:2px; background:linear-gradient(#ffb4b4, var(--brand)); border-radius:2px}
+    .milestone{position:relative; margin:12px 0; padding:10px 12px; border-radius:12px; border:1px solid #ffffff18; background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02))}
+    .milestone:before{content:""; position:absolute; left:-20px; top:14px; width:12px; height:12px; border-radius:50%; background:var(--brand); box-shadow:0 0 0 3px #ffb4b433}
+    .milestone small{display:block; color:var(--muted)}
+
+    /* Wallet Modal */
+    .modal{position:fixed; inset:0; display:none; place-items:center; background:rgba(0,0,0,.55); z-index:80}
+    .modal.open{display:grid}
+    .modal-card{background:var(--card); width:min(560px, 92vw); border-radius:20px; border:1px solid #ffffff22; box-shadow:var(--shadow); padding:18px}
+    .wallet-row{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px}
+    .wallet-opt{display:flex; align-items:center; justify-content:center; gap:12px; background:linear-gradient(180deg, #2a2b2f, #1d1e22); border:1px solid #ffffff22; border-radius:16px; padding:14px 16px; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,.25); transition:.2s}
+    .wallet-opt:hover{transform:translateY(-1px); box-shadow:0 16px 28px rgba(0,0,0,.35)}
+
+    /* Toast */
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:var(--ring); border:1px solid #ffffff22; font-weight:700; font-size:12px}
+    .pill.ok{border-color:#19c37d55}
+    .pill.warn{border-color:#facc1555}
+    .toast{position:fixed; right:14px; bottom:14px; background:var(--card); color:var(--text); border:1px solid #ffffff15; border-left:6px solid var(--brand); padding:12px 14px; border-radius:14px; box-shadow:var(--shadow); min-width:240px; display:none}
+    .toast.show{display:block}
+  </style>
+</head>
+<body id="top">
+  <div class="container">
+    <!-- ===== Header ===== -->
+    <header class="site-header">
+      <!-- Burger menu button (delicious SVG; fades away when nav opens) -->
+      <button id="menuBtn" class="icon-btn" aria-label="Open menu" aria-controls="sideNav" aria-expanded="false">
+        <svg class="burger-svg" width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
+          <defs>
+            <linearGradient id="bunTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffd28a"/><stop offset="100%" stop-color="#e5a64e"/></linearGradient>
+            <linearGradient id="bunBottom" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0b25a"/><stop offset="100%" stop-color="#d38d3a"/></linearGradient>
+            <linearGradient id="patty" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5a2e1b"/><stop offset="100%" stop-color="#3d1e12"/></linearGradient>
+            <linearGradient id="cheese" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffd93b"/><stop offset="100%" stop-color="#ffb703"/></linearGradient>
+            <linearGradient id="lettuce" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8bd66a"/><stop offset="100%" stop-color="#3aa74b"/></linearGradient>
+          </defs>
+          <path d="M8 28c0-10 10-18 24-18s24 8 24 18H8z" fill="url(#bunTop)"/>
+          <g fill="#fff" fill-opacity=".85"><circle cx="26" cy="18" r="1.1"/><circle cx="34" cy="16" r="1.1"/><circle cx="42" cy="20" r="1.1"/><circle cx="20" cy="21" r="1.1"/></g>
+          <path d="M12 30c4 3 8 2 12 0s8-2 12 0 8 3 12 0c4-3 8-2 8-2v4H4v-4s4-1 8 2z" fill="url(#lettuce)"/>
+          <path d="M14 34h36l-6 6-6-4-6 4-6-4-6 4z" fill="url(#cheese)"/>
+          <rect x="10" y="34" width="44" height="6" rx="3" fill="url(#patty)"/>
+          <rect x="12" y="42" width="40" height="8" rx="4" fill="url(#bunBottom)"/>
+        </svg>
+      </button>
+
+      <div class="brand">
+        <div class="logo-chip">
+          <svg class="burger-svg" width="24" height="24" viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M8 28c0-10 10-18 24-18s24 8 24 18H8z" fill="#ffd28a"/>
+            <rect x="10" y="34" width="44" height="6" rx="3" fill="#5a2e1b"/>
+            <path d="M14 34h36l-6 6-6-4-6 4-6-4-6 4z" fill="#ffd93b"/>
+            <path d="M12 30c4 3 8 2 12 0s8-2 12 0 8 3 12 0c4-3 8-2 8-2v4H4v-4s4-1 8 2z" fill="#69c65a"/>
+            <rect x="12" y="42" width="40" height="8" rx="4" fill="#f0b25a"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="title">Burger Bucks Presale</h1>
+          <span class="subtitle">The juiciest token on the menu — powering dining, loyalty, and web3 rewards.</span>
+        </div>
+      </div>
+
+      <div class="cta">
+        <button class="btn secondary" onclick="location.href='bb-lp.html'">🔗 Litepaper</button>
+        <button id="openWalletModal" class="btn">🔌 Connect Wallet</button>
+      </div>
+    </header>
+
+    <!-- Slide-out navigation -->
+    <nav id="sideNav" class="sidenav" aria-hidden="true">
+      <div class="sidenav-header">
+        <div class="sidenav-brand">
+          <div class="logo-chip small">
+            <svg class="burger-svg" width="22" height="22" viewBox="0 0 64 64" aria-hidden="true">
+              <path d="M8 28c0-10 10-18 24-18s24 8 24 18H8z" fill="#ffd28a"/>
+              <rect x="10" y="34" width="44" height="6" rx="3" fill="#5a2e1b"/>
+              <path d="M14 34h36l-6 6-6-4-6 4-6-4-6 4z" fill="#ffd93b"/>
+              <path d="M12 30c4 3 8 2 12 0s8-2 12 0 8 3 12 0c4-3 8-2 8-2v4H4v-4s4-1 8 2z" fill="#69c65a"/>
+              <rect x="12" y="42" width="40" height="8" rx="4" fill="#f0b25a"/>
+            </svg>
+          </div>
+          <strong>Navigate</strong>
+        </div>
+        <button id="closeNav" class="icon-btn" style="width:40px;height:40px;border-radius:10px" aria-label="Close menu">✕</button>
+      </div>
+      <ul>
+        <li><a href="#top" data-close-nav>Home</a></li>
+        <li><a href="#tokenomics" data-close-nav>Tokenomics</a></li>
+        <li><a href="#roadmap" data-close-nav>Roadmap</a></li>
+        <li><a href="#team" data-close-nav>Team</a></li>
+        <li><a href="#faq" data-close-nav>FAQ</a></li>
+        <li><a href="#dashboard" data-close-nav>Dashboard</a></li>
+      </ul>
+    </nav>
+    <div id="navScrim" class="scrim" hidden></div>
+
+    <!-- HERO -->
+    <section class="hero card">
+      <h2>Own the Future of Restaurant Rewards</h2>
+      <p>
+        Burger Bucks (BURGER) is your chance to bite into the next wave of dining innovation.
+        From exclusive VIP perks to seamless crypto payments, BURGER fuels a global ecosystem where
+        every meal, every order, and every loyalty point is powered by web3.
+        <br/><br/>
+        Join the presale today — and help cook up the tastiest revolution in real-world crypto utility.
+      </p>
+      <div style="margin-top:26px;">
+        <button id="heroBuy" class="btn" style="font-size:18px; padding:14px 28px;">💰 Buy Burger Bucks</button>
+      </div>
+    </section>
+
+    <!-- MAIN GRID -->
+    <div class="grid">
+      <!-- Tokenomics -->
+      <section class="card" id="tokenomics">
+        <h2 class="section-title">📊 Tokenomics</h2>
+        <p>Total Supply: <strong>100,000,000 BURGER</strong></p>
+        <ul>
+          <li>Presale Allocation: 20%</li>
+          <li>Liquidity Pool: 30%</li>
+          <li>Team & Advisors: 15%</li>
+          <li>Community Rewards: 25%</li>
+          <li>Reserve: 10%</li>
+        </ul>
+        <div class="chart-wrap">
+          <canvas id="tokenomicsChart" aria-label="Burger Bucks Allocation" role="img"></canvas>
+        </div>
+      </section>
+
+      <!-- Roadmap -->
+      <aside class="card" id="roadmap">
+        <h2 class="section-title">🗺️ Roadmap</h2>
+        <div class="timeline">
+          <div class="milestone"><strong>Q3 2025</strong><small>Presale Launch • Litepaper v1 • Community channels live</small></div>
+          <div class="milestone"><strong>Q4 2025</strong><small>DEX Listing + Liquidity • Smart-contract Audit • dApp v1</small></div>
+          <div class="milestone"><strong>Q1 2026</strong><small>Restaurant Pilot (5 locations) • POS Prototype • Loyalty ↔ BURGER swap beta</small></div>
+          <div class="milestone"><strong>Q2 2026</strong><small>Mobile Wallet MVP • Staking Rewards v1 • Merchant Dashboard</small></div>
+          <div class="milestone"><strong>Q3 2026</strong><small>50 Merchants Onboarded • Referral Program • Fiat On-Ramp</small></div>
+          <div class="milestone"><strong>Q4 2026</strong><small>Governance v1 • Regional Franchise Pilots • Contracts v2 (post-audit)</small></div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- TEAM -->
+    <section class="card" id="team">
+      <h2 class="section-title">👨‍🍳 Team</h2>
+      <p class="muted">Built by blockchain developers, restaurant operators, and community builders committed to real-world crypto utility.</p>
+    </section>
+
+    <!-- FAQ -->
+    <section class="card" id="faq">
+      <h2 class="section-title">❓ FAQ</h2>
+      <details><summary>How do I participate?</summary><div class="muted">Connect a wallet (MetaMask or WalletConnect), then press Buy. You’ll confirm a transaction with your wallet.</div></details>
+      <details><summary>Which network?</summary><div class="muted">Ethereum mainnet for presale settlement (can be changed). Your dApp can enforce a specific chainId in the buy function.</div></details>
+      <details><summary>When will tokens be claimable?</summary><div class="muted">On TGE, according to presale terms and any vesting schedules disclosed in the Litepaper.</div></details>
+      <details><summary>Is this audited?</summary><div class="muted">Security review pending. Use at your own risk; read the Litepaper and contract before participating.</div></details>
+    </section>
+
+    <!-- DASHBOARD (hidden until wallet connect) -->
+    <section class="card" id="dashboard" style="display:none">
+      <h2 class="section-title">📊 Dashboard</h2>
+      <div class="kv">
+        <div><strong>Status</strong><span><span id="walletStatus" class="pill warn">Wallet not connected</span></span></div>
+        <div><strong>Address</strong><span id="addrPill" class="pill ok" style="display:none">—</span></div>
+        <div><strong>Soft / Hard Cap</strong><span>$5k / $10k</span></div>
+        <div><strong>Min / Max</strong><span>0.01 / 2 ETH</span></div>
+      </div>
+      <div style="margin-top:14px">
+        <button id="buyBtn" class="btn" disabled>Buy via Connected Wallet</button>
+      </div>
+    </section>
+
+    <p class="muted" style="margin-top:8px">Disclaimer: Demo UI. Values and addresses are placeholders.</p>
+  </div>
+
+  <!-- Wallet Modal -->
+  <div class="modal" id="walletModal" role="dialog" aria-modal="true" aria-labelledby="walletTitle">
+    <div class="modal-card">
+      <h3 id="walletTitle" style="margin:0 0 6px">Select Wallet</h3>
+      <p class="muted" style="margin:0 0 10px">Choose a wallet provider to connect.</p>
+      <div class="wallet-row">
+        <div class="wallet-opt" id="chooseMetaMask" title="MetaMask">🦊 <strong>MetaMask</strong></div>
+        <div class="wallet-opt" id="chooseWalletConnect" title="WalletConnect">🔗 <strong>WalletConnect</strong></div>
+      </div>
+      <div style="margin-top:12px; text-align:right"><button class="btn secondary" id="closeWalletModal">Close</button></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"><h4 id="toastTitle" style="margin:0 0 6px">Notice</h4><p id="toastMsg" style="margin:0">—</p></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const $ = (s) => document.querySelector(s);
+  const walletModal = $('#walletModal');
+  const openBtn = $('#openWalletModal');
+  const closeBtn = $('#closeWalletModal');
+  const chooseMetaMask = $('#chooseMetaMask');
+  const chooseWalletConnect = $('#chooseWalletConnect');
+  const dashboard = $('#dashboard');
+  const buyBtn = $('#buyBtn');
+  const heroBuy = $('#heroBuy');
+  const walletStatus = $('#walletStatus');
+  const addrPill = $('#addrPill');
+  const toast = $('#toast');
+  const toastTitle = $('#toastTitle');
+  const toastMsg = $('#toastMsg');
+
+  // Drawer elements
+  const menuBtn = document.getElementById('menuBtn');
+  const sideNav = document.getElementById('sideNav');
+  const closeNav = document.getElementById('closeNav');
+  const navScrim = document.getElementById('navScrim');
+
+  let walletConnected = false, connectedAddress = null;
+
+  function showToast(title, msg, ms=2400){
+    toastTitle.textContent = title; toastMsg.textContent = msg;
+    toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), ms);
+  }
+  const abbreviate = (addr) => addr ? addr.slice(0,6) + '…' + addr.slice(-4) : '';
+
+  // Modal
+  openBtn.addEventListener('click', () => walletModal.classList.add('open'));
+  closeBtn.addEventListener('click', () => walletModal.classList.remove('open'));
+  heroBuy.addEventListener('click', () => walletModal.classList.add('open'));
+
+  // Drawer open/close with burger fade
+  function fadeOutBurger(){ menuBtn?.classList.add('fade-out'); }
+  function showBurger(){ menuBtn?.classList.remove('fade-out'); menuBtn?.classList.add('fade-in'); setTimeout(()=>menuBtn?.classList.remove('fade-in'), 250); }
+  function openNav(){
+    sideNav?.classList.add('open');
+    if (navScrim) navScrim.hidden = false;
+    menuBtn?.setAttribute('aria-expanded','true');
+    sideNav?.setAttribute('aria-hidden','false');
+    document.body.classList.add('nav-open');
+    fadeOutBurger();
+  }
+  function closeNavNow(){
+    sideNav?.classList.remove('open');
+    if (navScrim) navScrim.hidden = true;
+    menuBtn?.setAttribute('aria-expanded','false');
+    sideNav?.setAttribute('aria-hidden','true');
+    document.body.classList.remove('nav-open');
+    showBurger();
+  }
+  menuBtn?.addEventListener('click', () => sideNav?.classList.contains('open') ? closeNavNow() : openNav());
+  closeNav?.addEventListener('click', closeNavNow);
+  navScrim?.addEventListener('click', closeNavNow);
+  sideNav?.addEventListener('click', (e)=>{
+    const a = e.target.closest('a[data-close-nav]');
+    if(!a) return;
+    e.preventDefault();
+    const id = (a.getAttribute('href')||'').replace('#','');
+    closeNavNow();
+    if (id) document.getElementById(id)?.scrollIntoView({behavior:'smooth', block:'start'});
+  });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && sideNav?.classList.contains('open')) closeNavNow(); });
+
+  // MetaMask
+  function getMetaMaskProvider(){ const eth = window.ethereum; if(!eth) return null; if (eth.providers?.length) return eth.providers.find(p => p.isMetaMask) || null; return eth.isMetaMask ? eth : null; }
+  chooseMetaMask.addEventListener('click', async () => {
+    walletModal.classList.remove('open');
+    const mm = getMetaMaskProvider();
+    if(!mm){ showToast('MetaMask not found','Install MetaMask to continue.'); return; }
+    try{
+      const accounts = await mm.request({ method: 'eth_requestAccounts' });
+      connectedAddress = accounts?.[0] || null; afterConnect();
+      mm.on?.('accountsChanged', (acc)=>{ connectedAddress = acc?.[0] || null; afterConnect(); });
+    }catch(err){ console.error(err); showToast('Connection failed','Wallet rejected.'); }
+  });
+
+  // WalletConnect (Web3Modal) — optional
+  const WC_PROJECT_ID = 'YOUR_WALLETCONNECT_PROJECT_ID'; // <- replace with your real ID
+  const W3M_HTML = window['@web3modal/html'];
+  const W3M_ETH  = window['@web3modal/ethereum'];
+  let web3modal = null;
+  if(W3M_HTML && W3M_ETH){
+    try{
+      web3modal = W3M_HTML.createWeb3Modal({
+        ethersConfig: W3M_ETH.defaultConfig({
+          projectId: WC_PROJECT_ID,
+          metadata: { name:'Burger Bucks', description:'Presale', url: location.origin, icons:['https://fav.farm/🍔'] },
+          enableInjected: true, enableWalletConnect: true
+        }),
+        chains: [{ chainId:1, name:'Ethereum', currency:'ETH', rpcUrl:'https://rpc.ankr.com/eth', explorerUrl:'https://etherscan.io' }],
+        projectId: WC_PROJECT_ID
+      });
+    }catch(e){ console.warn('Web3Modal init failed', e); }
+  }
+  chooseWalletConnect.addEventListener('click', async () => {
+    walletModal.classList.remove('open');
+    if(!web3modal || !W3M_ETH || !WC_PROJECT_ID || WC_PROJECT_ID === 'YOUR_WALLETCONNECT_PROJECT_ID'){
+      showToast('Setup required','Add WalletConnect Project ID.'); return;
+    }
+    try{
+      await web3modal.open();
+      const provider = await W3M_ETH.getProvider();
+      if(provider){
+        const accounts = await provider.request({ method: 'eth_accounts' });
+        connectedAddress = accounts?.[0] || null; afterConnect();
+        provider.on?.('accountsChanged', (acc)=>{ connectedAddress = acc?.[0] || null; afterConnect(); });
+      }
+    }catch(err){ console.error(err); showToast('Connection failed','WalletConnect canceled.'); }
+  });
+
+  function afterConnect(){
+    walletConnected = !!connectedAddress;
+    if(walletConnected){
+      walletStatus.textContent = 'Connected'; walletStatus.classList.remove('warn');
+      dashboard.style.display='block'; addrPill.style.display='inline-flex'; addrPill.textContent = 'Connected: ' + abbreviate(connectedAddress);
+      openBtn.style.display='none'; buyBtn.disabled=false;
+    }else{
+      walletStatus.textContent = 'Wallet not connected'; walletStatus.classList.add('warn');
+      openBtn.style.display='inline-flex'; dashboard.style.display='none'; addrPill.style.display='none'; buyBtn.disabled=true;
+    }
+  }
+
+  buyBtn?.addEventListener('click', ()=>{
+    if(!walletConnected) return showToast('Not connected','Connect wallet first');
+    showToast('Success (demo)','Burger Bucks purchased!');
+  });
+
+  // Demo progress numbers (replace with contract reads)
+  const raised=2500, buyers=42, target=10000, price=0.0001;
+  // (Optional) you can render these somewhere if you want.
+
+  // ===== Tokenomics Doughnut =====
+  const tokenomicsCanvas = document.getElementById('tokenomicsChart');
+  const ctx2 = tokenomicsCanvas.getContext('2d');
+
+  // Center label
+  const centerLabelPlugin = { id:'centerLabel', afterDraw(chart){
+    const a=chart.chartArea; if(!a) return;
+    const cx=(a.left+a.right)/2, cy=(a.top+a.bottom)/2;
+    const root=document.documentElement;
+    const muted=getComputedStyle(root).getPropertyValue('--muted')||'#9aa1ac';
+    const text=getComputedStyle(root).getPropertyValue('--text')||'#fff';
+    const c=chart.ctx; c.save(); c.textAlign='center';
+    c.fillStyle=muted; c.font='600 14px Inter, system-ui'; c.fillText('Burger Bucks', cx, cy-8);
+    c.fillStyle=text;  c.font='800 18px Inter, system-ui'; c.fillText('100M Supply', cx, cy+14);
+    c.restore();
+  }};
+
+  // Arc labels
+  const arcLabels = { id:'arcLabels', afterDatasetsDraw(chart){
+    const meta=chart.getDatasetMeta(0); if(!meta?.data?.length) return;
+    const data=chart.data.datasets[0].data, total=data.reduce((a,b)=>a+b,0)||1; const c=chart.ctx;
+    meta.data.forEach((el,i)=>{
+      const {startAngle,endAngle,outerRadius,x,y}=el.getProps(['startAngle','endAngle','outerRadius','x','y'],true);
+      if([startAngle,endAngle,outerRadius,x,y].some(v=>v==null)) return;
+      const mid=(startAngle+endAngle)/2, rx=Math.cos(mid), ry=Math.sin(mid);
+      const tx=x+rx*(outerRadius+20), ty=y+ry*(outerRadius+20);
+      const pct=Math.round((data[i]/total)*100);
+      c.save();
+      c.strokeStyle='rgba(255,255,255,.35)'; c.beginPath(); c.moveTo(x+rx*outerRadius, y+ry*outerRadius); c.lineTo(tx,ty); c.stroke();
+      c.fillStyle='rgba(0,0,0,.5)'; c.beginPath(); c.arc(tx,ty,10,0,Math.PI*2); c.fill();
+      c.fillStyle='#fff'; c.font='700 11px Inter'; c.textAlign='center'; c.textBaseline='middle'; c.fillText(pct+'%', tx, ty);
+      c.restore();
+    });
+  }};
+
+  // Slice gradients
+  let gradients=null; const gradientPlugin={ id:'sliceGradients', beforeDatasetsDraw(chart){
+    if(gradients) return; const a=chart.chartArea; if(!a) return;
+    const {left,right,top,bottom}=a; const mk=(c1,c2)=>{ const g=chart.ctx.createLinearGradient(left,top,right,bottom); g.addColorStop(0,c1); g.addColorStop(1,c2); return g; };
+    gradients=[ mk('#ff9b9b','#ff5a5a'), mk('#ff7a7a','#ff3838'), mk('#ff5555','#e11d2e'), mk('#ff3b3b','#c11224'), mk('#ff2a2a','#9b0f19') ];
+    chart.data.datasets[0].backgroundColor=gradients;
+  }};
+
+  new Chart(ctx2, {
+    type:'doughnut',
+    data:{ labels:['Presale (20%)','Liquidity Pool (30%)','Team & Advisors (15%)','Community Rewards (25%)','Reserve (10%)'],
+      datasets:[{ data:[20,30,15,25,10], backgroundColor:['#ff7a7a','#ff5555','#ff2b2b','#e31b1b','#b70f17'], borderWidth:0, hoverOffset:12, spacing:3 }] },
+    options:{ responsive:true, cutout:'66%',
+      plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, pointStyle:'circle', boxWidth:10 } },
+                title:{ display:true, text:'Burger Bucks Allocation' }, tooltip:{ backgroundColor:'rgba(0,0,0,.85)' } },
+      elements:{ arc:{ borderRadius:12 } }
+    },
+    plugins:[gradientPlugin, centerLabelPlugin, arcLabels]
+  });
+});
+</script>
+</body>
+</html>
