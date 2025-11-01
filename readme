@@ -1,10 +1,10 @@
-# 🍔 FastFoodChain: Real-World Crypto Utility for Quick-Service Restaurants
+# 🍔 BurgerBucks: Real-World Crypto Utility for Quick-Service Restaurants
 
-FastFoodChain is a decentralized utility protocol designed to bring real-world value to fast food ecosystems through cryptocurrency. Built for scalability, modularity, and consumer-centric incentives, it enables restaurants to tokenize their operations, streamline payments, and reward intelligence—all while reducing operational costs.
+BurgerBucks is a decentralized utility protocol designed to bring real-world value to fast food ecosystems through cryptocurrency. Built for scalability, modularity, and consumer-centric incentives, it enables restaurants to tokenize their operations, streamline payments, and reward intelligence—all while reducing operational costs.
 
 ## 🚀 Vision
 
-FastFoodChain bridges the gap between blockchain and burgers. Whether you're a global franchise or a local diner, this protocol empowers you to:
+BurgerBucks bridges the gap between blockchain and burgers. Whether you're a global franchise or a local diner, this protocol empowers you to:
 
 - Launch your own branded token (optional)
 - Accept crypto payments via integrated DEX routing
@@ -30,7 +30,7 @@ Restaurants can opt to launch their own ERC-20 tokens to:
 - Create branded loyalty ecosystems
 - Participate in cross-promotional campaigns with other vendors
 
-Token creation is permissionless and modular—plug into the FastFoodChain ecosystem or run standalone.
+Token creation is permissionless and modular—plug into the BurgerBucks ecosystem or run standalone.
 
 ## 🔄 DEX Integration
 
@@ -40,7 +40,7 @@ Token creation is permissionless and modular—plug into the FastFoodChain ecosy
 
 ## 🌐 Network Deployment
 
-FastFoodChain is deployed on the **LightchainAI** network, enabling:
+BurgerBucks is deployed on the **LightchainAI** network, enabling:
 - Privacy-preserving AI computation
 - Scalable, low-cost transactions
 - Native support for AIVM and PoI modules
